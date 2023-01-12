@@ -1,3 +1,2 @@
-# timer
-timer python
-v1.0
+# Timer v1.0
+Temporizador para apagar PC en Windows con Python
