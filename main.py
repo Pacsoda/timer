@@ -6,10 +6,7 @@ import subprocess
 hora = 18
 min = 30
 
-seconds = hora_out = min_out = seg_out = hora_actual = min_actual = seg_actual = 0
-version = 1.0
-tiempoSuperado = False
-
+version = 1.1
 out_time = lambda a, b, c: " %02d : %02d : %02d" % (a , b , c)
 
 header = '''
@@ -18,7 +15,8 @@ header = '''
      | |      | |    | |\/| |   |  _|     | |_) |  
      | |      | |    | |  | |   | |___    |  _ <  
      |_|     |___|   |_|  |_|   |_____|   |_| \_\ v%a
-   
+   by @pacsoda
+
    Programar apagado: p -a
    Cancelar: p -c
    Ver comandos: ayuda
@@ -27,7 +25,7 @@ header = '''
 comandos_msj ='''
    Temporizador: t
    Modificar temporizador: t -m
-   Tiempo temporizador: t -t
+   Duracion temporizador: t -t
    Tiempo computadora: t -c
    Programar apagado: p -a
    Programar reinicio: p -r
@@ -39,34 +37,21 @@ comandos_msj ='''
 print(header)
 
 def dateTime():
-   tiempo_actual = datetime.datetime.now().time()
-   global hora_actual,min_actual,seg_actual
-   hora_actual = tiempo_actual.hour
-   min_actual = tiempo_actual.minute
-   seg_actual = tiempo_actual.second
+   global dt_actual
+   dt_actual = datetime.datetime.now()
 
 def timer():
    dateTime()
-   global hora_out,min_out,seg_out,seconds,tiempoSuperado
-   if seg_actual > 0 : seg_out = 60-seg_actual
-   seconds = seg_out
-   if (hora_actual + 1) == hora:
-      min_out = (60-min_actual)+min
-      seconds += min_out*60
-   elif hora_actual < hora:
-      hora_out = hora-hora_actual
-      if min_actual < min :
-         min_out = min-min_actual
-         seconds += min_out*60
-      else:
-         hora_out-=1
-         min_out = (60-min_actual)+min
-         seconds += min_out*60
-      seconds += hora_out*3600
-   else:
-      seg_out = 0
+   global duracion,seconds,tiempoSuperado
+   dt_timer = datetime.datetime(dt_actual.year,dt_actual.month,dt_actual.day,hora,min,00)#yr, mo, day, hr, min, sec
+   duracion = dt_timer - dt_actual
+   if duracion.days == -1: 
+      tiempoSuperado = True 
+      duracion = "00:00:00"
       seconds = 0
-      tiempoSuperado = True
+   else:
+      tiempoSuperado = False
+      seconds = duracion.total_seconds()
 
 while True:
    comand = input("input >_: ").strip()
@@ -74,16 +59,13 @@ while True:
       print(out_time(hora,min,0))
    elif(comand == "t -c"):
       dateTime()
-      if tiempoSuperado:
-         print(out_time(hora_actual,min_actual,seg_actual)," [TIEMPO SUPERADO]")
-      else:
-         print(out_time(hora_actual,min_actual,seg_actual))
+      print(dt_actual.time())
    elif(comand == "t -t"):
       timer()
       if tiempoSuperado:
-         print(out_time(hora_out,min_out,seg_out),"(",seconds,") [TIEMPO SUPERADO]")
+         print(duracion,"(",seconds,") [TIEMPO SUPERADO]")
       else:
-         print(out_time(hora_out,min_out,seg_out),"(",seconds,")")
+         print(duracion,"(",seconds,")")
    elif(comand == "t -m"):
       print(" Inserte la hora en formato de 24 Horas")
       hora = int(input("input >_: ").strip())
@@ -105,5 +87,3 @@ while True:
       subprocess.run("shutdown /a")# Cancelar
    elif(comand == "salir"):
       sys.exit()
-
-
